@@ -60,7 +60,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
 .meta-input { width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.18s; }
 .meta-input:focus { border-color: var(--blue); }
 .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-@media (max-width: 600px) { .config-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .config-grid { grid-template-columns: 1fr 1fr !important; } }
+@media (max-width: 600px) { .config-grid { grid-template-columns: 1fr !important; } }
 .config-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); }
 .config-box h3 { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
 .check-actions { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -129,6 +130,15 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
 .btn-copy-img:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-bg); }
 .btn-copy-img svg { flex-shrink: 0; }
 
+/* CIA toggle button */
+.btn-cia-toggle { display: flex; align-items: center; gap: 6px; padding: 6px 13px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.18s; }
+.btn-cia-toggle:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-bg); }
+.btn-cia-toggle.on { background: var(--blue-bg); border-color: #c2d6f5; color: var(--blue); }
+.cia-toggle-pill { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 17px; border-radius: 9px; background: #d1d5db; transition: background 0.18s; position: relative; }
+.btn-cia-toggle.on .cia-toggle-pill { background: var(--blue); }
+.cia-toggle-knob { position: absolute; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: #fff; transition: left 0.18s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.btn-cia-toggle.on .cia-toggle-knob { left: 17px; }
+
 /* CHART */
 .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 28px; box-shadow: var(--shadow); margin-bottom: 8px; }
 .chart-title { font-size: 14px; font-weight: 700; color: var(--header-bg); margin-bottom: 18px; text-align: center; }
@@ -151,6 +161,15 @@ table.nt tbody tr:hover td { background: #eef2fb; }
 table.nt tbody tr.sub-row td { background: #f5f6f8; color: var(--muted); font-size: 12px; padding: 7px 14px; }
 table.nt tbody tr.sub-row:hover td { background: #eef2fb; }
 table.nt tbody tr.sub-row td:first-child { padding-left: 32px; }
+
+/* CIA sub-rows */
+table.nt tbody tr.cia-row { display: none; }
+table.nt tbody tr.cia-row.visible { display: table-row; }
+table.nt tbody tr.cia-row td { background: #f9fafb; color: #9aa0ac; font-size: 11.5px; padding: 6px 14px; border-bottom: 1px solid #edf0f4; }
+table.nt tbody tr.cia-row td:first-child { padding-left: 36px; font-style: italic; font-weight: 500; color: #8a909c; }
+table.nt tbody tr.cia-row:hover td { background: #f0f4ff; }
+table.nt tbody tr.cia-row .nps-val { font-size: 12px; color: #8a909c; }
+table.nt tbody tr.cia-row .dot { width: 8px; height: 8px; opacity: 0.7; }
 
 .name-col { font-weight: 600; min-width: 180px; white-space: normal !important; line-height: 1.35; }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; flex-shrink: 0; }
@@ -214,7 +233,7 @@ table.nt tbody tr.sub-row td:first-child { padding-left: 32px; }
     </div>
   </div>
 
-  <div class="config-grid">
+  <div class="config-grid" style="grid-template-columns: 1fr 1fr 1fr">
     <div class="config-box">
       <h3>📋 Scripts</h3>
       <div class="check-actions">
@@ -246,6 +265,31 @@ table.nt tbody tr.sub-row td:first-child { padding-left: 32px; }
       </div>
       <div class="analyst-tags" id="analystTags"></div>
       <div style="display:none" id="analystChecks"></div>
+    </div>
+
+    <div class="config-box">
+      <h3>🏢 CIAs (Coluna N)</h3>
+      <div class="check-actions">
+        <button class="cta-btn" onclick="selectAllCias()">Selecionar todas</button>
+        <span style="color:var(--border);margin:0 2px">|</span>
+        <button class="cta-btn" onclick="clearAllCias()">Limpar</button>
+        <span style="color:var(--border);margin:0 2px">|</span>
+        <button class="cta-btn" onclick="toggleCiaPasteArea()">📋 Colar lista</button>
+      </div>
+      <div class="paste-area-wrap" id="ciaPasteAreaWrap" style="display:none">
+        <textarea id="ciaPasteArea" class="paste-area" placeholder="Cole os nomes das CIAs aqui, um por linha..."></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn-paste-confirm" onclick="applyCiaPastedList()">✓ Aplicar</button>
+          <button class="cta-btn" onclick="toggleCiaPasteArea()">Cancelar</button>
+        </div>
+      </div>
+      <div class="analyst-search-wrap cia-search-wrap">
+        <input type="text" id="ciaSearch" class="analyst-search" placeholder="🔍  Buscar CIA..." oninput="filterCiaSearch()" autocomplete="off">
+        <div class="analyst-dropdown" id="ciaDropdown"></div>
+      </div>
+      <div class="analyst-tags" id="ciaTags"></div>
+      <div style="display:none" id="ciaChecks"></div>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted)">⚠️ Deixe todas desmarcadas para não filtrar por CIA.</div>
     </div>
   </div>
 
@@ -297,10 +341,16 @@ table.nt tbody tr.sub-row td:first-child { padding-left: 32px; }
   <div style="margin-bottom:28px">
     <div class="section-header" style="margin-bottom:10px">
       <span class="section-label">NPS por Script</span>
-      <button class="btn-copy-img" onclick="copySection('scriptSection')">
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-cia-toggle" id="btnCiaToggle" onclick="toggleCiaRows()">
+          <div class="cia-toggle-pill"><div class="cia-toggle-knob"></div></div>
+          <span id="ciaToggleLabel">CIAs por Script: OFF</span>
+        </button>
+        <button class="btn-copy-img" onclick="copySection('scriptSection')">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         Copiar imagem
       </button>
+      </div>
     </div>
     <div id="scriptSection">
       <div class="nps-table-outer">
@@ -408,6 +458,9 @@ function processFile(file) {
         const obj = {};
         headers.forEach((h, j) => obj[h] = r[j]);
 
+        // Map column N (index 13) as CIA key
+        obj['_cia'] = r[13] != null ? String(r[13]).trim() : '';
+
         // Robust note parsing: try raw first, then formatted string
         const rawVal = r[notaIdx];
         const fmtVal = rowsFmt[i + 1]?.[notaIdx];
@@ -439,12 +492,14 @@ function processFile(file) {
 
       const scripts  = [...new Set(rawData.map(r => r._script).filter(Boolean))].sort();
       const analysts = [...new Set(rawData.map(r => r['Nome Comprador']).filter(Boolean))].sort();
+      const cias     = [...new Set(rawData.map(r => r['_cia']).filter(Boolean))].sort();
 
       if (!scripts.length)  throw new Error('Coluna "Item" vazia ou não encontrada.');
       if (!analysts.length) throw new Error('Coluna "Nome Comprador" vazia ou não encontrada.');
 
       buildCheckboxList('scriptChecks', scripts);
       buildAnalystUI(analysts);
+      buildCiaUI(cias);
       showScreen('configScreen');
 
     } catch (err) {
@@ -468,6 +523,10 @@ function buildCheckboxList(id, items) {
 // ── ANALYST SEARCH UI ────────────────────────────────────────────
 let allAnalysts = [];
 let selectedAnalysts = new Set();
+
+// ── CIA SEARCH UI ─────────────────────────────────────────────────
+let allCias = [];
+let selectedCias = new Set();
 
 function buildAnalystUI(analysts) {
   allAnalysts = analysts;
@@ -589,7 +648,112 @@ document.addEventListener('click', e => {
   if (!e.target.closest('.analyst-search-wrap')) {
     document.getElementById('analystDropdown')?.classList.remove('open');
   }
+  if (!e.target.closest('.cia-search-wrap')) {
+    document.getElementById('ciaDropdown')?.classList.remove('open');
+  }
 });
+
+// ── CIA UI ────────────────────────────────────────────────────────
+function buildCiaUI(cias) {
+  allCias = cias;
+  selectedCias = new Set();
+  renderCiaTags();
+  renderHiddenCiaCheckboxes();
+}
+
+function filterCiaSearch() {
+  const q = document.getElementById('ciaSearch').value.trim().toLowerCase();
+  const dropdown = document.getElementById('ciaDropdown');
+  if (!q) { dropdown.classList.remove('open'); return; }
+
+  const matches = allCias.filter(a => a.toLowerCase().includes(q));
+  if (!matches.length) {
+    dropdown.innerHTML = `<div class="dropdown-empty">Nenhum resultado</div>`;
+  } else {
+    dropdown.innerHTML = matches.map(a => {
+      const sel = selectedCias.has(a);
+      return `<div class="dropdown-item ${sel ? 'already-added' : ''}" onclick="toggleCia('${esc(a)}'); filterCiaSearch();">
+        <span>${esc(a)}</span>
+        ${sel ? '<span style="font-size:11px;color:var(--green)">✓ selecionado</span>' : '<span style="font-size:11px;color:var(--blue)">+ adicionar</span>'}
+      </div>`;
+    }).join('');
+  }
+  dropdown.classList.add('open');
+}
+
+function toggleCia(name) {
+  if (selectedCias.has(name)) selectedCias.delete(name);
+  else selectedCias.add(name);
+  renderCiaTags();
+  renderHiddenCiaCheckboxes();
+}
+
+function selectAllCias() {
+  selectedCias = new Set(allCias);
+  renderCiaTags();
+  renderHiddenCiaCheckboxes();
+}
+
+function clearAllCias() {
+  selectedCias.clear();
+  renderCiaTags();
+  renderHiddenCiaCheckboxes();
+}
+
+function renderCiaTags() {
+  const container = document.getElementById('ciaTags');
+  container.innerHTML = allCias.map(a => {
+    const sel = selectedCias.has(a);
+    return `<span class="analyst-tag ${sel ? 'selected' : 'unselected'}" onclick="toggleCia('${esc(a)}')">${esc(a)}</span>`;
+  }).join('');
+}
+
+function renderHiddenCiaCheckboxes() {
+  document.getElementById('ciaChecks').innerHTML = [...selectedCias].map(a =>
+    `<input type="checkbox" value="${esc(a)}" checked>`
+  ).join('');
+}
+
+function toggleCiaPasteArea() {
+  const wrap = document.getElementById('ciaPasteAreaWrap');
+  const isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    document.getElementById('ciaPasteArea').value = '';
+    document.getElementById('ciaPasteArea').focus();
+  }
+}
+
+function applyCiaPastedList() {
+  const raw = document.getElementById('ciaPasteArea').value;
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+
+  const normalize = s => s.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  let matched = 0, notFound = [];
+  const newSel = new Set();
+
+  lines.forEach(line => {
+    const normLine = normalize(line);
+    const found = allCias.find(a => normalize(a).includes(normLine) || normLine.includes(normalize(a)));
+    if (found) { newSel.add(found); matched++; }
+    else notFound.push(line);
+  });
+
+  if (!newSel.size) {
+    alert('Nenhuma CIA da lista foi encontrada na planilha. Verifique se os nomes estão corretos.');
+    return;
+  }
+
+  selectedCias = newSel;
+  renderCiaTags();
+  renderHiddenCiaCheckboxes();
+  toggleCiaPasteArea();
+
+  if (notFound.length) {
+    alert(`✓ ${matched} CIA(s) selecionada(s).\n\nNão encontradas (${notFound.length}):\n${notFound.join('\n')}`);
+  }
+}
 
 // ── DATE FILTER STATE ────────────────────────────────────────────
 let _lastValidScript = [];
@@ -702,6 +866,7 @@ function getChecked(id) {
 function generateDashboard() {
   const selScripts  = getChecked('scriptChecks');
   const selAnalysts = getChecked('analystChecks');
+  const selCias     = getChecked('ciaChecks');
   const META1 = parseFloat(document.getElementById('meta1Input').value) || 84;
   const META2 = parseFloat(document.getElementById('meta2Input').value) || 87.36;
 
@@ -720,14 +885,19 @@ function generateDashboard() {
     r._nota  = r['_notaParsed'] ?? null;
   });
 
-  // 1. SCRIPT: todas as notas dos scripts selecionados, qualquer analista
+  // CIA filter: if none selected, don't filter by CIA
+  const ciaActive = selCias.length > 0;
+
+  // 1. SCRIPT: todas as notas dos scripts selecionados, qualquer analista (+ CIA se filtrado)
   const validScript = rawData.filter(r =>
-    selScripts.includes(r._script) && r._day && r._nota !== null
+    selScripts.includes(r._script) && r._day && r._nota !== null &&
+    (!ciaActive || selCias.includes(r['_cia']))
   );
 
-  // 2. ANALISTA: todas as notas dos analistas selecionados, qualquer script
+  // 2. ANALISTA: todas as notas dos analistas selecionados, qualquer script (+ CIA se filtrado)
   const validAnalyst = rawData.filter(r =>
-    selAnalysts.includes(r['Nome Comprador']) && r._day && r._nota !== null
+    selAnalysts.includes(r['Nome Comprador']) && r._day && r._nota !== null &&
+    (!ciaActive || selCias.includes(r['_cia']))
   );
 
   if (!validScript.length) { alert('Nenhuma nota encontrada para os scripts selecionados.'); return; }
@@ -1004,20 +1174,39 @@ function renderAnalystTable(data, selAnalysts, META1, META2) {
 }
 
 // ── SCRIPT TABLE ─────────────────────────────────────────────────
+let _ciaRowsVisible = false;
+
+function toggleCiaRows() {
+  _ciaRowsVisible = !_ciaRowsVisible;
+  const btn = document.getElementById('btnCiaToggle');
+  const lbl = document.getElementById('ciaToggleLabel');
+  btn.classList.toggle('on', _ciaRowsVisible);
+  lbl.textContent = _ciaRowsVisible ? 'CIAs por Script: ON' : 'CIAs por Script: OFF';
+  document.querySelectorAll('#scriptTable tbody tr.cia-row').forEach(tr => {
+    tr.classList.toggle('visible', _ciaRowsVisible);
+  });
+}
+
 function renderScriptTable(data, selScripts, META1, META2) {
   const total = calcNPS(data);
 
   const scriptRows = selScripts.map(script => {
     const sd = data.filter(d => d._script === script);
     const stats = calcNPS(sd);
-    return { script, stats };
+    // CIA breakdown for this script
+    const cias = [...new Set(sd.map(r => r['_cia']).filter(Boolean))].sort();
+    const ciaStats = cias.map(cia => {
+      const cd = sd.filter(d => d['_cia'] === cia);
+      return { cia, stats: calcNPS(cd) };
+    }).filter(c => c.stats.total > 0).sort((a,b) => (b.stats.nps ?? -999) - (a.stats.nps ?? -999));
+    return { script, stats, ciaStats };
   }).sort((a,b) => (b.stats.nps ?? -999) - (a.stats.nps ?? -999));
 
   const m1Lbl = `META ${META1.toFixed(0)}%`;
   const m2Lbl = `META ${META2.toFixed(2).replace('.',',')}%`;
 
   let bodyHtml = '';
-  scriptRows.forEach(({ script, stats }) => {
+  scriptRows.forEach(({ script, stats, ciaStats }) => {
     bodyHtml += `<tr>
       <td class="name-col">${esc(script)}</td>
       <td class="nps-cell"><span class="dot ${dotC(stats.nps,META1)}"></span><span class="nps-val ${npsC(stats.nps,META1)}">${fmtNPS(stats.nps)}</span></td>
@@ -1025,6 +1214,16 @@ function renderScriptTable(data, selScripts, META1, META2) {
       <td style="text-align:center">${metaCell(neededFor(stats,META1))}</td>
       <td style="text-align:center">${metaCell(neededFor(stats,META2))}</td>
     </tr>`;
+    // CIA sub-rows
+    ciaStats.forEach(({ cia, stats: cs }) => {
+      bodyHtml += `<tr class="cia-row${_ciaRowsVisible ? ' visible' : ''}">
+        <td class="name-col">↳ ${esc(cia)}</td>
+        <td class="nps-cell"><span class="dot ${dotC(cs.nps,META1)}"></span><span class="nps-val">${fmtNPS(cs.nps)}</span></td>
+        <td class="num-cell" style="text-align:center">${cs.p}</td><td class="num-cell" style="text-align:center">${cs.n}</td><td class="num-cell" style="text-align:center">${cs.d}</td>
+        <td style="text-align:center">${metaCell(neededFor(cs,META1))}</td>
+        <td style="text-align:center">${metaCell(neededFor(cs,META2))}</td>
+      </tr>`;
+    });
   });
 
   document.getElementById('scriptTable').innerHTML = `
