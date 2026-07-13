@@ -289,7 +289,7 @@ table.nt tbody tr.cia-row .dot { width: 8px; height: 8px; opacity: 0.7; }
       </div>
       <div class="analyst-tags" id="ciaTags"></div>
       <div style="display:none" id="ciaChecks"></div>
-      <div style="margin-top:8px;font-size:11px;color:var(--muted)">⚠️ Deixe todas desmarcadas para não filtrar por CIA.</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted)">⚠️ Deixe todas desmarcadas para não filtrar por CIA. O filtro de CIA afeta apenas a NPS Ilha (Script); os analistas sempre consideram 100% das notas em seu nome.</div>
     </div>
   </div>
 
@@ -888,16 +888,16 @@ function generateDashboard() {
   // CIA filter: if none selected, don't filter by CIA
   const ciaActive = selCias.length > 0;
 
-  // 1. SCRIPT: todas as notas dos scripts selecionados, qualquer analista (+ CIA se filtrado)
+  // 1. SCRIPT (ILHA): todas as notas dos scripts selecionados, qualquer analista (+ CIA se filtrado)
   const validScript = rawData.filter(r =>
     selScripts.includes(r._script) && r._day && r._nota !== null &&
     (!ciaActive || selCias.includes(r['_cia']))
   );
 
-  // 2. ANALISTA: todas as notas dos analistas selecionados, qualquer script (+ CIA se filtrado)
+  // 2. ANALISTA: apenas o nome do analista importa. Nenhum filtro de script ou CIA é aplicado
+  // (o analista deve ler 100% das notas em seu nome, independente do script/CIA selecionados).
   const validAnalyst = rawData.filter(r =>
-    selAnalysts.includes(r['Nome Comprador']) && r._day && r._nota !== null &&
-    (!ciaActive || selCias.includes(r['_cia']))
+    selAnalysts.includes(r['Nome Comprador']) && r._day && r._nota !== null
   );
 
   if (!validScript.length) { alert('Nenhuma nota encontrada para os scripts selecionados.'); return; }
